@@ -115,6 +115,20 @@ type EditIssueOption struct {
 	RemoveDeadline *bool      `json:"unset_due_date"`
 }
 
+// MoveIssuesOption options for moving issues
+type MovedIssuesOption struct {
+	Issues []struct {
+		IssueID int64 `json:"issueID"`
+		Sorting int64 `json:"sorting"`
+	} `json:"issues"`
+}
+
+// UpdateIssuesOption options for updating issues
+type UpdateIssuesOption struct {
+	ProjectID int64   `json:"project_id"`
+	Issues    []int64 `json:"issues"`
+}
+
 // EditDeadlineOption options for creating a deadline
 type EditDeadlineOption struct {
 	// required:true
@@ -177,19 +191,20 @@ const (
 // IssueTemplate represents an issue template for a repository
 // swagger:model
 type IssueTemplate struct {
-	Name     string              `json:"name" yaml:"name"`
-	Title    string              `json:"title" yaml:"title"`
-	About    string              `json:"about" yaml:"about"` // Using "description" in a template file is compatible
-	Labels   IssueTemplateLabels `json:"labels" yaml:"labels"`
-	Ref      string              `json:"ref" yaml:"ref"`
-	Content  string              `json:"content" yaml:"-"`
-	Fields   []*IssueFormField   `json:"body" yaml:"body"`
-	FileName string              `json:"file_name" yaml:"-"`
+	Name      string                   `json:"name" yaml:"name"`
+	Title     string                   `json:"title" yaml:"title"`
+	About     string                   `json:"about" yaml:"about"` // Using "description" in a template file is compatible
+	Labels    IssueTemplateStringSlice `json:"labels" yaml:"labels"`
+	Assignees IssueTemplateStringSlice `json:"assignees" yaml:"assignees"`
+	Ref       string                   `json:"ref" yaml:"ref"`
+	Content   string                   `json:"content" yaml:"-"`
+	Fields    []*IssueFormField        `json:"body" yaml:"body"`
+	FileName  string                   `json:"file_name" yaml:"-"`
 }
 
-type IssueTemplateLabels []string
+type IssueTemplateStringSlice []string
 
-func (l *IssueTemplateLabels) UnmarshalYAML(value *yaml.Node) error {
+func (l *IssueTemplateStringSlice) UnmarshalYAML(value *yaml.Node) error {
 	var labels []string
 	if value.IsZero() {
 		*l = labels
@@ -217,7 +232,7 @@ func (l *IssueTemplateLabels) UnmarshalYAML(value *yaml.Node) error {
 		*l = labels
 		return nil
 	}
-	return fmt.Errorf("line %d: cannot unmarshal %s into IssueTemplateLabels", value.Line, value.ShortTag())
+	return fmt.Errorf("line %d: cannot unmarshal %s into IssueTemplateStringSlice", value.Line, value.ShortTag())
 }
 
 type IssueConfigContactLink struct {
